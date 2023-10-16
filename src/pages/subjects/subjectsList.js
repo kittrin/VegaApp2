@@ -1,85 +1,55 @@
+import {useFonts} from "expo-font";
 import React, {useCallback, useEffect, useState} from "react";
-import {FlatList, Image, Text, View, StyleSheet, Pressable, Linking} from "react-native"
-import {TopMenu} from "../../components/menu/top_menu/TopMenu";
+import * as SplashScreen from "expo-splash-screen";
 import {useFetching} from "../../hooks/useFetching";
 import SubjectsService from "../../API/SubjectsService";
+import {TopMenu} from "../../components/menu/top_menu/TopMenu";
+import {FlatList, Image, Pressable, StyleSheet, Text, View} from "react-native";
 import {Loader} from "../../components/loader/loader";
 
-export const List_objects = ({navigation, route}) => {
-    const [openSubject, setOpenSubject] = useState(in_fav? 'detail': 'main')
-    const [openDetail, setOpenDetail] = useState(!!in_fav)
+export const SubjectsList = ({navigation}) =>{
+    const [fontsLoaded] = useFonts({
+        'Montserrat-Regular': require('../../../assets/fonts/Montserrat-Regular.ttf'), //font-weight 400
+        'Montserrat-Medium': require('../../../assets/fonts/Montserrat-Medium.ttf'), //font-weight 500
+        'Montserrat-SemiBold': require('../../../assets/fonts/Montserrat-SemiBold.ttf'), //font-weight 600
+        'Montserrat-Bold': require('../../../assets/fonts/Montserrat-Bold.ttf')//font-weight 600
+    })
     const [listSubjects, setListSubjects] = useState([])
+
     const [fetchDiscipline, isLoading, error] = useFetching(async () => {
         const response = await SubjectsService.getAll('HIGH');
         setListSubjects(response)
     })
-    const in_fav = route.params.flag_subj? route.params.flag_subj :false
     useEffect(() => {
         fetchDiscipline()
     }, [])
     const Item = ({item}) => (
-        <Pressable style={styles.subject_item} onPress={() => changeSubject('detail', item)}>
+        <Pressable style={styles.subject_item} onPress={() =>navigation.navigate('subjects-detail', {subjectId: item.id})}>
             <Text>{item.title}</Text>
         </Pressable>
     )
-    const OpenURLButton = ({url, children}) => {
-        const handlePress = useCallback(async () => {
-            const supported = await Linking.canOpenURL(url);
-            await Linking.openURL(url);
-        }, [url]);
-
-        return <Text onPress={handlePress} style={styles.detail_btn}>{children}</Text>;
-    };
-    const DetailItem = ({item}) => (
-        <View style={styles.main_page}>
+    const onLayoutRootView = useCallback(async () => {
+        if (fontsLoaded) {
+            await SplashScreen.hideAsync();
+        }
+    }, [fontsLoaded]);
+    return(
+        <View style={styles.main_page} onLayout={onLayoutRootView}>
             <TopMenu navigation={navigation}/>
             <View style={styles.title_main}>
-                <Pressable style={styles.btn_block} onPress={() => changeSubject('main')}>
+                <Pressable style={styles.btn_block} onPress={() => navigation.navigate('main')}>
                     <Image source={require('../../image/icons/arrow_left.png')} style={styles.img_btn}/>
                     <Text style={styles.text_btn}>Назад</Text>
                 </Pressable>
                 <Text style={styles.title_text}>Предметы</Text>
             </View>
-            <Text style={styles.detail_title}>{item.title}</Text>
-            <Text style={styles.detail_description}>{item.description}</Text>
-            {item.fipiLink? <OpenURLButton url={item.fipiLink}>Сайт ФИПИ</OpenURLButton>
-                : <View></View>
-            }
-            {
-                item.sdamGiaLink? <OpenURLButton url={item.sdamGiaLink}>Сайт Решу ЕГЭ</OpenURLButton>
-                    : <View></View>
+            {isLoading ? <Loader/> :
+                <FlatList
+                    data={listSubjects}
+                    renderItem={({item}) => <Item item={item}/>}
+                    keyExtractor={(item) => item.id}/>
             }
         </View>
-    )
-    const changeSubject = (subject, item = 0) => {
-        setOpenSubject(subject)
-        setOpenDetail(item)
-    }
-    const page =
-        {
-
-            main:
-                <View style={styles.main_page}>
-                    <TopMenu navigation={navigation}/>
-                    <View style={styles.title_main}>
-                        <Pressable style={styles.btn_block} onPress={() => navigation.navigate('main')}>
-                            <Image source={require('../../image/icons/arrow_left.png')} style={styles.img_btn}/>
-                            <Text style={styles.text_btn}>Назад</Text>
-                        </Pressable>
-                        <Text style={styles.title_text}>Предметы</Text>
-                    </View>
-                    {isLoading ? <Loader/> :
-                        <FlatList
-                            data={listSubjects}
-                            renderItem={({item}) => <Item item={item}/>}
-                            keyExtractor={(item) => item.id}/>
-                    }
-                </View>,
-            detail: <DetailItem item={openDetail}/>
-        }
-
-    return (
-        page[openSubject]
     )
 }
 const styles = StyleSheet.create({

@@ -4,10 +4,10 @@
     "slug": "vegaappedit",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/adicon.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/adicon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -15,24 +15,28 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true,
-      "config": {
-        "usesNonExemptEncryption": false
-      }
+      "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/adicon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.kristofin3.vegaappedit"
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/adicon.png"
     },
     "extra": {
       "eas": {
         "projectId": "6cd3eb73-b553-4f1e-8220-96c45860b569"
       }
+    },
+    "runtimeVersion": {
+      "policy": "sdkVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/6cd3eb73-b553-4f1e-8220-96c45860b569"
     }
   }
 }

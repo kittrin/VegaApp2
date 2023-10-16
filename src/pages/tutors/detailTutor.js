@@ -6,6 +6,7 @@ import {Image, Pressable, ScrollView, StyleSheet, Text, View} from "react-native
 import {useFetching} from "../../hooks/useFetching";
 import TutorsService from "../../API/TutorsService";
 import {Loader} from "../../components/loader/loader";
+import {useDispatch, useSelector} from "react-redux";
 
 export const DetailTutor = ({navigation, route}) =>{
     const [fontsLoaded] = useFonts({
@@ -14,11 +15,24 @@ export const DetailTutor = ({navigation, route}) =>{
         'Montserrat-SemiBold': require('../../../assets/fonts/Montserrat-SemiBold.ttf'), //font-weight 600
     })
     const town_id = route.params.townId
-    const time = route.params.time
+    const time = route.params.time? route.params.time: undefined
     const disciplineId = route.params.disciplineId
     const districtId = route.params.districtId
     const tutorId = route.params.tutorId
     const [data, setData] = useState({})
+    const [flagFav, setFlagFav] = useState(false)
+
+    //---------------------------
+    const dispatch = useDispatch()
+    const favorite_spec = useSelector(state => state.tutorReducer.tutors)
+    const proverka = ()=>{
+        favorite_spec.map((el, ind)=>{
+            if (el.id===tutorId){
+                setFlagFav(true)
+            }
+        })
+    }
+    //-----------------------
     const [fetch, isLoading, error] = useFetching(async ()=>{
         const response = await TutorsService.getById({tutor_id: tutorId})
         await setData(response)
@@ -26,6 +40,18 @@ export const DetailTutor = ({navigation, route}) =>{
     useEffect(()=>{
         fetch()
     }, [])
+    useEffect(()=>{
+        proverka()
+    }, [])
+    const pressTutorFav = () => {
+        if (flagFav){
+            dispatch({type: 'remove_fav_tutor', payload: {id: tutorId, title: `${data.forename} ${data.surname}`}})
+            setFlagFav(false)
+        } else {
+            dispatch({type: 'add_fav_tutor', payload: {id: tutorId,  title: `${data.forename} ${data.surname}`}})
+            setFlagFav(true)
+        }
+    }
     const onLayoutRootView = useCallback(async () => {
         if (fontsLoaded) {
             await SplashScreen.hideAsync();
@@ -39,10 +65,15 @@ export const DetailTutor = ({navigation, route}) =>{
             <TopMenu navigation={navigation}/>
             <View style={styles.title_main}>
                 <Pressable style={styles.btn_block} onPress={() => {
-                    if(time==='offline'){
-                        navigation.navigate('offlineTutors', {time: time, disciplineId: disciplineId, townId: town_id, districtId: districtId})
-                    } else{
-                        navigation.navigate('onlineTutors', {time: time, disciplineId: disciplineId})
+                    if (time!==undefined){
+                        if(time==='offline'){
+                            navigation.navigate('offlineTutors', {time: time, disciplineId: disciplineId, townId: town_id, districtId: districtId})
+                        } else{
+                            navigation.navigate('onlineTutors', {time: time, disciplineId: disciplineId})
+                        }
+                    }
+                    else {
+                        navigation.navigate('favorite')
                     }
                 }}>
                     <Image source={require('../../image/icons/arrow_left.png')} style={styles.img_btn}/>
@@ -54,7 +85,17 @@ export const DetailTutor = ({navigation, route}) =>{
                 isLoading? <Loader/>
                     :
                     <View style={styles.main}>
-                        <Text style={styles.title_tutor}>{data.forename} {data.surname}</Text>
+                        <View style={styles.block_title}>
+                            <Text style={styles.text_title}>
+                                {data.forename} {data.surname}
+                            </Text>
+                            <Pressable onPress={pressTutorFav}>
+                                {
+                                    flagFav? <Image source={require('../../image/icons/in-fav-list.png')} style={styles.fav_btn}/>
+                                        : <Image source={require('../../image/icons/not-in-fav-list.png')} style={styles.fav_btn}/>
+                                }
+                            </Pressable>
+                        </View>
                         <Text style={styles.description_tutor}>{data.description}</Text>
                     </View>
             }
@@ -94,6 +135,29 @@ const styles = StyleSheet.create({
     main: {
         paddingHorizontal: 30,
 },
+    block_title: {
+        paddingHorizontal: 20,
+        paddingVertical: 15,
+        backgroundColor: '#fff',
+        borderRadius: 10,
+        shadowColor: 'black',
+        shadowOffset: {width: 0, height: 0},
+        shadowRadius: 4,
+        elevation: 1,
+        justifyContent: "space-between",
+        flexDirection: 'row',
+        alignItems: 'center'
+    },
+    fav_btn:{
+        width: 20,
+        height: 20
+    },
+    text_title: {
+        fontFamily: 'Montserrat-Medium',
+        fontSize: 14,
+        // width: '60%'
+
+    },
     title_tutor: {
         paddingHorizontal:  30,
         paddingVertical: 15,

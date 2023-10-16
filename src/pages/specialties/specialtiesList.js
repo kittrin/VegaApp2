@@ -8,8 +8,10 @@ import {useFetching} from "../../hooks/useFetching";
 import SpecialtiesService from "../../API/SpecialtiesService";
 import {Loader} from "../../components/loader/loader";
 import {Pagination} from "../../components/pagination/pagination";
+import CalcSpecialtiesService from "../../API/CalcSpecialtiesService";
+import {useDispatch, useSelector} from "react-redux";
 
-export const SpecialtiesList = ({navigation}) => {
+export const SpecialtiesList = ({navigation, route}) => {
     const [fontsLoaded] = useFonts({
         'Montserrat-Regular': require('../../../assets/fonts/Montserrat-Regular.ttf'), //font-weight 400
         'Montserrat-Medium': require('../../../assets/fonts/Montserrat-Medium.ttf'), //font-weight 500
@@ -18,8 +20,28 @@ export const SpecialtiesList = ({navigation}) => {
     const [list, setList] = useState([])
     const [page, setPage] = useState(0);
     const [totalPage, setTotalPage] = useState(0)
+    const disciplineSetId = route.params.disciplineSetId
+    const includeBudget = route.params.includeBudget
+    const includeContract = route.params.includeContract
+    const scoreFilter = route.params.scoreFilter
+    const regionId = route.params.regionId
+    // console.log('disciplineSetId: ', disciplineSetId, '\n',
+    //     'includeBudget', includeBudget, '\n',
+    //     'includeContract', includeContract, '\n',
+    //     'scoreFilter', scoreFilter, '\n',
+    //     'regionId', regionId, '\n',
+    // )
+    console.log(list)
+
     const [fetch, isLoading, error] = useFetching(async () => {
-        const response = await SpecialtiesService.getAll({page: page, size: 40})
+        const response = await CalcSpecialtiesService.getSpecialties({
+            disciplineSetId: disciplineSetId,
+            scoreFilter: scoreFilter,
+            page: page,
+            includeBudget: includeBudget,
+            includeContract: includeContract,
+            regionFilter: regionId
+        })
         await setList(response.content)
         await setTotalPage(response.totalPages)
     })
@@ -38,7 +60,12 @@ export const SpecialtiesList = ({navigation}) => {
         >
             <TopMenu navigation={navigation}/>
             <View style={styles.title_main}>
-                <Pressable style={styles.btn_block} onPress={() => navigation.navigate('main')}>
+                <Pressable style={styles.btn_block} onPress={() => navigation.navigate('region-list', {
+                    disciplineSetId: disciplineSetId,
+                    includeBudget: includeBudget,
+                    includeContract: includeContract,
+                    scoreFilter: scoreFilter
+                })}>
                     <Image source={require('../../image/icons/arrow_left.png')} style={styles.img_btn}/>
                     <Text style={styles.text_btn}>Назад</Text>
                 </Pressable>
@@ -57,6 +84,7 @@ export const SpecialtiesList = ({navigation}) => {
                                             ...styles.el
                                         },
                                     ]}
+                                    key={el.id}
                                     onPress={() => navigation.navigate('specialties/detail', {specId: el.id})}
                                 >
                                     <Text style={styles.elText}>{el.speciality.title} ({el.university.title})</Text>

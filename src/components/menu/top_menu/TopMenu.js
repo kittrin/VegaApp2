@@ -28,11 +28,11 @@ export const TopMenu = ({navigation}) => {
                         />
                     </Pressable>
                     <Text style={styles.li} onPress={() => {
-                        navigation.navigate('subjects')
+                        navigation.navigate('subjects-list')
                         setOpenMenu(false)
                     }}>Предметы</Text>
                     <Text style={styles.li}
-                          onPress={() => navigation.navigate('specialties')}>Специальности</Text>
+                          onPress={() => navigation.navigate('change-subject')}>Специальности</Text>
                     <Text style={styles.li}
                           onPress={() => navigation.navigate('que-tutor-1')}>Подготовка к экзаменам</Text>
                     <Text style={styles.li}
@@ -57,7 +57,7 @@ export const TopMenu = ({navigation}) => {
                 >
                     <Image source={require('../../../image/icons/menu_top_button.png')}/>
                 </Pressable>
-                <Pressable style={styles.btnOpenMenu}>
+                <Pressable style={styles.btnOpenMenu} onPress={()=>navigation.navigate('favorite')}>
                     <Image source={require('../../../image/icons/menu_fav_button.png')}/>
                 </Pressable>
             </View>
